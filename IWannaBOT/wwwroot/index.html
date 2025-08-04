@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8" />
+    <title>IWannaBOT</title>
+</head>
+<body>
+    <h1>Обери, що хочеш 🍵</h1>
+
+    <label for="teaSelect">Чай:</label><br>
+    <select id="teaSelect"></select>
+    <br><br>
+
+    <label for="dishSelect">Страва:</label><br>
+    <select id="dishSelect"></select>
+    <br><br>
+
+    <button id="sendBtn">📩 Замовити</button>
+    <p id="status"></p>
+
+    <script>
+        async function loadOptions(url, selectId) {
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                const select = document.getElementById(selectId);
+
+                select.innerHTML = "";
+                data.forEach(opt => {
+                    const option = document.createElement("option");
+                    option.value = opt.text;
+                    option.textContent = opt.text;
+                    select.appendChild(option);
+                });
+            } catch {
+                document.getElementById(selectId).innerHTML = `<option>❌ Помилка завантаження</option>`;
+            }
+        }
+
+        document.getElementById("sendBtn").addEventListener("click", async () => {
+            const selectedTea = document.getElementById("teaSelect").value;
+            const selectedDish = document.getElementById("dishSelect").value;
+
+            const res = await fetch('/bot/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: `Користувач хоче: чай - ${selectedTea}, страва - ${selectedDish}` })
+            });
+
+            document.getElementById("status").textContent = res.ok
+                ? "✅ Надіслано!"
+                : "❌ Помилка при надсиланні";
+        });
+
+        // Завантаження чаю та страв
+        loadOptions('/api/options', 'teaSelect');
+        loadOptions('/api/dishes', 'dishSelect');
+    </script>
+</body>
+</html>
